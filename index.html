@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greens Malayalee Kootayama (GMK) - Production Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kerala: {
+                            deep: '#0F4C2A',
+                            emerald: '#1B7339',
+                            gold: '#D4AF37',
+                            lightgold: '#F4E0A5',
+                            cream: '#FFFDF6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gold-gradient { background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%); }
+        .emerald-gradient { background: linear-gradient(135deg, #0F4C2A 0%, #1B7339 100%); }
+    </style>
+</head>
+<body class="bg-kerala-cream font-sans text-gray-900 selection:bg-kerala-gold selection:text-white" x-data="gmkPlatform()">
+
+    <header class="emerald-gradient text-white shadow-md sticky top-0 z-50 border-b-4 border-kerala-gold">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-1.5 rounded-full border border-kerala-gold">
+                    <span class="text-xl">🌴</span>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-lg md:text-xl tracking-wide text-kerala-lightgold">GREENS MALAYALEE KOOTAYAMA</h1>
+                    <p class="text-[10px] uppercase tracking-widest text-emerald-100">Gated Community Digital Ecosystem</p>
+                </div>
+            </div>
+            <nav class="flex items-center space-x-2">
+                <span class="text-xs bg-kerala-deep/50 px-3 py-1.5 rounded text-kerala-lightgold font-mono hidden md:inline-block border border-kerala-gold/30" x-text="'System Time: 2026-05-25'"></span>
+                <template x-if="currentUser">
+                    <button @click="logout()" class="bg-red-800 hover:bg-red-900 px-3 py-1 text-xs rounded font-medium transition">Exit Portal</button>
+                </template>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 min-h-[calc(100vh-80px)]">
+        
+        <template x-if="currentView === 'login'">
+            <div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                <div class="emerald-gradient p-6 text-center text-white relative">
+                    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                    <h2 class="font-serif text-2xl font-bold tracking-wide">Resident Gateway</h2>
+                    <p class="text-xs text-emerald-100 mt-1">Sign in to your authenticated community profile</p>
+                </div>
+
+                <div class="flex border-b border-gray-100">
+                    <button @click="authMode = 'resident'" :class="authMode === 'resident' ? 'border-b-2 border-kerala-emerald text-kerala-emerald font-bold' : 'text-gray-400'" class="w-1/2 py-3 text-sm font-medium transition">Resident Login</button>
+                    <button @click="authMode = 'admin'" :class="authMode === 'admin' ? 'border-b-2 border-kerala-emerald text-kerala-emerald font-bold' : 'text-gray-400'" class="w-1/2 py-3 text-sm font-medium transition">Executive/Admin Login</button>
+                </div>
+
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Generated Username / Corporate Alias</label>
+                        <input type="text" x-model="loginForm.username" placeholder="e.g., B30472" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-kerala-emerald focus:outline-none font-mono uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
+                        <div class="relative">
+                            <input :type="showPassword ? 'text' : 'password'" x-model="loginForm.password" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-kerala-emerald focus:outline-none">
+                            <button @click="showPassword = !showPassword" class="absolute right-3 top-2 text-xs text-gray-500 underline" x-text="showPassword ? 'Hide' : 'Show'"></button>
+                        </div>
+                    </div>
+
+                    <button @click="executeLogin()" class="w-full bg-kerala-emerald hover:bg-kerala-deep text-white py-2.5 rounded font-bold transition shadow-md">Authenticate Session</button>
+                    
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="flex-shrink mx-4 text-gray-400 text-xs font-mono">OR SECURE INTERFACES</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <button @click="triggerGoogleLogin()" class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-2 rounded font-medium text-sm flex items-center justify-center space-x-2 transition">
+                        <span>🌐</span> <span>Continue with Corporate Google Single Sign-On</span>
+                    </button>
+
+                    <div class="text-center pt-2">
+                        <button @click="currentView = 'register'" class="text-xs text-kerala-emerald font-bold hover:underline">New Resident? Secure Multi-Member Registration Form →</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="currentView === 'register'">
+            <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                <div class="emerald-gradient p-5 text-white flex justify-between items-center">
+                    <div>
+                        <h2 class="font-serif text-xl font-bold">GMK Resident Intake Registration Pipeline</h2>
+                        <p class="text-xs text-emerald-100">Step <span x-text="regStep"></span> of 3: Comprehensive Family Metadata Mapping</p>
+                    </div>
+                    <button @click="currentView = 'login'" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded text-xs">Return to Login</button>
+                </div>
+
+                <div class="p-6">
+                    <div x-show="regStep === 1" class="space-y-4">
+                        <div class="bg-amber-50 border border-amber-200 p-3 rounded text-xs text-amber-800">
+                            <strong>Strict Gated Database Notice:</strong> Input validation enforces the "One Flat = One Validated Account Profile" constraint.
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Flat Infrastructure Number</label>
+                                <input type="text" x-model="regForm.flat_number" @input="calculateUsername()" placeholder="B3-04-72" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-kerala-emerald uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Auto-Generated Primary Username</label>
+                                <input type="text" x-model="regForm.username" disabled class="w-full px-3 py-2 bg-gray-100 border rounded font-mono text-gray-600 font-bold">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Primary Email Node</label>
+                                <input type="email" x-model="regForm.email" class="w-full px-3 py-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Secure Password</label>
+                                <input type="password" x-model="regForm.password" class="w-full px-3 py-2 border rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Mobile Interface Number (OTP Required)</label>
+                            <div class="flex space-x-2">
+                                <input type="tel" x-model="regForm.phone" placeholder="+968 XXXXXXXX" class="w-full px-3 py-2 border rounded">
+                                <button @click="triggerOTPStub()" class="bg-kerala-gold text-kerala-deep px-4 rounded text-xs font-bold whitespace-nowrap hover:bg-opacity-90">Send Token</button>
+                            </div>
+                        </div>
+                        <div x-show="otpSent" class="bg-gray-50 p-3 rounded border border-gray-200 flex items-center justify-between">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase">Simulated Sandbox OTP Code (Valid Now)</label>
+                                <span class="font-mono font-bold text-lg text-kerala-emerald" x-text="generatedOTP"></span>
+                            </div>
+                            <input type="text" placeholder="Enter Token" x-model="regForm.otpInput" class="w-24 px-2 py-1 text-center font-mono border rounded">
+                        </div>
+
+                        <div class="pt-4 border-t flex justify-end">
+                            <button @click="advanceRegStep(2)" class="bg-kerala-emerald hover:bg-kerala-deep text-white px-6 py-2 rounded text-sm font-bold shadow">Next: Family Architecture Details →</button>
+                        </div>
+                    </div>
+
+                    <div x-show="regStep === 2" class="space-y-6">
+                        <div class="border-l-4 border-kerala-emerald pl-3">
+                            <h3 class="text-sm font-bold text-kerala-deep uppercase tracking-wider">Household Head Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                                <select x-model="regForm.husband.title" class="px-2 py-1.5 border rounded text-sm">
+                                    <option value="Mr">Mr.</option>
+                                    <option value="Dr">Dr.</option>
+                                </select>
+                                <input type="text" x-model="regForm.husband.name" placeholder="Full Registered Name" class="md:col-span-2 px-3 py-1.5 border rounded text-sm">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                <input type="text" x-model="regForm.husband.profession" placeholder="Profession" class="px-3 py-1.5 border rounded text-sm">
+                                <input type="text" x-model="regForm.husband.company" placeholder="Company Name" class="px-3 py-1.5 border rounded text-sm">
+                            </div>
+                        </div>
+
+                        <div class="border-l-4 border-kerala-gold pl-3">
+                            <h3 class="text-sm font-bold text-amber-800 uppercase tracking-wider">Spouse Node Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                                <select x-model="regForm.wife.title" class="px-2 py-1.5 border rounded text-sm">
+                                    <option value="Mrs">Mrs.</option>
+                                    <option value="Dr">Dr.</option>
+                                </select>
+                                <input type="text" x-model="regForm.wife.name" placeholder="Full Registered Name" class="md:col-span-2 px-3 py-1.5 border rounded text-sm">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                <select x-model="regForm.wife.professionType" class="px-3 py-1.5 border rounded text-sm">
+                                    <option value="Employed">Employed / Independent Professional</option>
+                                    <option value="Homemaker">Homemaker</option>
+                                </select>
+                                <input type="text" x-model="regForm.wife.company" placeholder="Company Name" x-show="regForm.wife.professionType === 'Employed'" class="px-3 py-1.5 border rounded text-sm">
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-xs font-bold text-gray-700 uppercase">Dependents & Children Nodes</h4>
+                                <button @click="addChildNode()" class="bg-white border border-gray-300 text-xs text-kerala-emerald px-2 py-1 rounded shadow-sm hover:bg-gray-100 font-medium">+ Add Child Node</button>
+                            </div>
+                            <div class="space-y-2">
+                                <template x-for="(child, index) in regForm.children" :key="index">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white p-2 rounded border border-gray-100 shadow-sm">
+                                        <input type="text" x-model="child.name" placeholder="Child Name" class="px-2 py-1 border rounded text-xs md:col-span-2">
+                                        <input type="number" x-model="child.yob" @input="calculateAges()" placeholder="Birth Year (YYYY)" class="px-2 py-1 border rounded text-xs font-mono">
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t flex justify-between">
+                            <button @click="regStep = 1" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-medium">← Back</button>
+                            <button @click="advanceRegStep(3)" class="emerald-gradient text-white px-6 py-2 rounded text-sm font-bold shadow">Next: Final Verification & Commit →</button>
+                        </div>
+                    </div>
+
+                    <div x-show="regStep === 3" class="space-y-4">
+                        <div class="p-4 rounded-xl bg-kerala-cream border-2 border-dashed border-kerala-gold">
+                            <h3 class="font-serif text-lg font-bold text-kerala-deep text-center mb-2">Review Digital Signature Specifications</h3>
+                            <div class="text-xs space-y-1 text-gray-700">
+                                <p><strong>Username Node:</strong> <span class="font-mono text-kerala-emerald font-bold" x-text="regForm.username"></span></p>
+                                <p><strong>Assigned Identity:</strong> Permanent Unique Sequential GMK Number Matrix Generated Upon Core Storage Insertion.</p>
+                                <p><strong>Security Attestation:</strong> By clicking confirm, you accept real-time network geolocation audits and strict compliance with local structural tenancy rules.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t flex justify-between">
+                            <button @click="regStep = 2" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm font-medium">← Modify Structure</button>
+                            <button @click="finalizeRegistration()" class="gold-gradient text-kerala-deep px-8 py-2.5 rounded text-sm font-bold shadow-md hover:opacity-95">Commit Account & Request Activation</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="currentView === 'resident_dashboard'">
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold bg-green-100 text-green-800 rounded">Verified Active Live Profile</span>
+                            <span class="font-mono text-xs font-bold text-kerala-gold" x-text="currentUser.gmk_id"></span>
+                        </div>
+                        <h2 class="font-serif text-2xl font-bold text-kerala-deep">Welcome Home, Family of <span x-text="currentUser.husband.name"></span></h2>
+                        <p class="text-xs text-gray-500 font-mono">Structural Identity Element Matrix Location: Flat <span x-text="currentUser.flat_number"></span></p>
+                    </div>
+                    <button @click="showIdCardModal = true" class="bg-white border-2 border-kerala-gold text-kerala-deep font-bold px-4 py-2 rounded shadow-sm hover:bg-kerala-gold hover:text-white transition text-xs flex items-center space-x-2">
+                        <span>🪪</span> <span>Display Secure Digital GMK ID Card</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                            <div class="emerald-gradient p-4 text-white flex justify-between items-center">
+                                <div class="flex items-center space-x-2">
+                                    <span class="animate-pulse h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                                    <h3 class="font-serif font-bold tracking-wide">Active Cultural Community Events</h3>
+                                </div>
+                                <span class="text-xs bg-white/20 px-2 py-0.5 rounded font-mono">Onam Festival Sequence 2026</span>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <div class="flex flex-col md:flex-row gap-4 justify-between items-start">
+                                    <div class="space-y-1">
+                                        <h4 class="text-lg font-bold text-gray-800" x-text="activeEvent.name"></h4>
+                                        <p class="text-xs text-gray-600" x-text="activeEvent.desc"></p>
+                                        <div class="text-xs text-gray-500 space-y-0.5 font-mono pt-2">
+                                            <p>📍 Venue: <span class="text-gray-700" x-text="activeEvent.venue"></span></p>
+                                            <p>📅 Schedule: <span class="text-gray-700" x-text="activeEvent.date"></span> | <span class="text-gray-700" x-text="activeEvent.time"></span></p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-kerala-cream p-3 rounded-lg border border-kerala-gold/30 text-center w-full md:w-auto">
+                                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest font-bold">Dynamic Registration Deadline</span>
+                                        <span class="text-sm font-mono font-bold text-red-700">Closes in 4 Days</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mt-4">
+                                    <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Dynamic Multi-Variant Pricing Calculator Matrix</h4>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="space-y-2 bg-white p-3 rounded border border-gray-200">
+                                            <span class="block text-xs font-bold text-kerala-deep uppercase">Select Committed Attendees</span>
+                                            <div class="space-y-1 text-xs">
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox" x-model="eventBooking.attendees.husband" @change="recalculateInvoice()">
+                                                    <span x-text="currentUser.husband.name + ' (Husband)'"></span>
+                                                </label>
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox" x-model="eventBooking.attendees.wife" @change="recalculateInvoice()">
+                                                    <span x-text="currentUser.wife.name + ' (Wife)'"></span>
+                                                </label>
+                                                <template x-for="(child, idx) in currentUser.children" :key="idx">
+                                                    <label class="flex items-center space-x-2">
+                                                        <input type="checkbox" x-model="eventBooking.attendees.children[idx]" @change="recalculateInvoice()">
+                                                        <span x-text="child.name + ' (Age: ' + child.age + ')'"></span>
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-2 bg-white p-3 rounded border border-gray-200">
+                                            <span class="block text-xs font-bold text-amber-800 uppercase">External Guest Matrix Additions</span>
+                                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                                <div>
+                                                    <label class="block text-[10px] uppercase font-bold text-gray-500">Adult Guests</label>
+                                                    <input type="number" min="0" x-model.number="eventBooking.guestAdults" @input="recalculateInvoice()" class="w-full px-2 py-1 border rounded">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10px] uppercase font-bold text-gray-500">Child Guests</label>
+                                                    <input type="number" min="0" x-model.number="eventBooking.guestChildren" @input="recalculateInvoice()" class="w-full px-2 py-1 border rounded">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 pt-3 border-t border-gray-200 flex justify-between items-center bg-white p-3 rounded shadow-inner">
+                                        <div>
+                                            <span class="text-xs text-gray-500 uppercase font-mono block">Calculated System Assessment Tier</span>
+                                            <span class="text-sm font-bold text-kerala-deep font-mono" x-text="eventBooking.tierName"></span>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-xs text-gray-500 uppercase font-mono block">Total Payable Matrix Code</span>
+                                            <span class="text-xl font-mono font-bold text-kerala-emerald" x-text="eventBooking.computedCost + ' OMR'"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 flex justify-end space-x-2">
+                                        <button @click="commitEventParticipation()" class="bg-kerala-emerald hover:bg-kerala-deep text-white text-xs font-bold px-4 py-2 rounded shadow transition">Accept Calculations & Register Ticket</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                            <h3 class="font-serif font-bold text-kerala-deep border-b pb-2 mb-3">Live Household Metrics</h3>
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between font-mono bg-gray-50 p-2 rounded"><span class="text-gray-500">Platform ID Status:</span> <span class="font-bold text-kerala-emerald" x-text="currentUser.gmk_id"></span></div>
+                                <div class="flex justify-between font-mono bg-gray-50 p-2 rounded"><span class="text-gray-500">Assigned Profile Username:</span> <span class="font-bold text-gray-700" x-text="currentUser.username"></span></div>
+                                <div class="flex justify-between font-mono bg-gray-50 p-2 rounded"><span class="text-gray-500">Registered Dependents:</span> <span class="font-bold text-gray-700" x-text="currentUser.children.length + ' Child Nodes'"></span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1">
+                            <h4 class="font-bold text-amber-900 uppercase tracking-wide">Omani Regulatory Disclaimer</h4>
+                            <p class="text-[11px] leading-relaxed">This ledger strictly aligns with localized digital governance frameworks. Community operations adhere to data custody procedures for gated properties in Muscat Governorate.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="currentView === 'admin_dashboard'">
+            <div class="space-y-6" x-init="syncAdminLedger()">
+                <div class="emerald-gradient text-white p-6 rounded-xl shadow-md flex justify-between items-center border-b-4 border-kerala-gold">
+                    <div>
+                        <span class="text-xs uppercase bg-white/20 px-2 py-0.5 rounded font-mono text-kerala-lightgold tracking-widest font-bold">EXECUTIVE MANAGEMENT COMMAND ROUTER</span>
+                        <h2 class="font-serif text-2xl font-bold tracking-wide">GMK Administrative Control Engine</h2>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs">
+                        <button @click="currentAdminTab = 'overview'" :class="currentAdminTab === 'overview' ? 'bg-kerala-gold text-kerala-deep font-bold' : 'bg-white/10 text-white'" class="px-3 py-1.5 rounded transition">Overview Matrix</button>
+                        <button @click="currentAdminTab = 'finance'" :class="currentAdminTab === 'finance' ? 'bg-kerala-gold text-kerala-deep font-bold' : 'bg-white/10 text-white'" class="px-3 py-1.5 rounded transition">Financial Ledger</button>
+                        <button @click="currentAdminTab = 'checkpoint'" :class="currentAdminTab === 'checkpoint' ? 'bg-kerala-gold text-kerala-deep font-bold' : 'bg-white/10 text-white'" class="px-3 py-1.5 rounded transition">QR Checkpoint Subsystem</button>
+                    </div>
+                </div>
+
+                <div x-show="currentAdminTab === 'overview'" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-kerala-emerald">
+                            <span class="text-xs uppercase text-gray-400 font-mono tracking-widest block">Total Registered Households</span>
+                            <span class="text-2xl font-bold font-mono text-kerala-deep" x-text="mockDatabase.residents.length"></span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-kerala-gold">
+                            <span class="text-xs uppercase text-gray-400 font-mono tracking-widest block">Active Operational Events</span>
+                            <span class="text-2xl font-bold font-mono text-amber-800">1 Sequence</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-600">
+                            <span class="text-xs uppercase text-gray-400 font-mono tracking-widest block">Aggregated Ledger Revenue</span>
+                            <span class="text-2xl font-bold font-mono text-blue-900" x-text="calculateTotalRevenue() + ' OMR'"></span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600">
+                            <span class="text-xs uppercase text-gray-400 font-mono tracking-widest block">Sponsorship Injection Pipeline</span>
+                            <span class="text-2xl font-bold font-mono text-purple-900" x-text="calculateSponsorTotal() + ' OMR'"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+                        <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                            <h3 class="font-bold text-xs uppercase text-gray-700 tracking-wider font-mono">Central Data Registry Log</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-kerala-cream border-b border-gray-200 text-xs font-mono font-bold text-gray-600">
+                                    <tr>
+                                        <th class="p-3">GMK Structural ID</th>
+                                        <th class="p-3">Primary Household Entity</th>
+                                        <th class="p-3">Location Flat</th>
+                                        <th class="p-3">System Username</th>
+                                        <th class="p-3">Primary Mobile Contact</th>
+                                        <th class="p-3 text-right">Actions Matrix</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs divide-y divide-gray-100 font-mono">
+                                    <template x-for="res in mockDatabase.residents" :key="res.gmk_id">
+                                        <tr class="hover:bg-gray-50/80 transition">
+                                            <td class="p-3 font-bold text-kerala-emerald" x-text="res.gmk_id"></td>
+                                            <td class="p-3 font-sans font-medium text-gray-900" x-text="res.husband.name"></td>
+                                            <td class="p-3 text-gray-700" x-text="res.flat_number"></td>
+                                            <td class="p-3 text-gray-600 font-bold" x-text="res.username"></td>
+                                            <td class="p-3 text-gray-600" x-text="res.phone"></td>
+                                            <td class="p-3 text-right">
+                                                <button @click="evictResidentProfile(res.gmk_id)" class="bg-red-50 hover:bg-red-100 text-red-700 px-2.5 py-1 rounded font-bold transition">Purge / Archive Node</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="currentAdminTab === 'finance'" class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow border border-gray-100 space-y-4">
+                            <h3 class="font-serif font-bold text-sm uppercase border-b pb-2 text-kerala-deep">Sponsor Financial Injection Module</h3>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-gray-500">Corporate Sponsor Legal Name</label>
+                                <input type="text" x-model="financeForm.sponsorName" class="w-full text-xs px-2 py-1.5 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-gray-500">Committed Amount Injection (OMR Capital)</label>
+                                <input type="number" x-model.number="financeForm.amount" class="w-full text-xs px-2 py-1.5 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-gray-500">Tracking Phone Matrix Reference</label>
+                                <input type="text" x-model="financeForm.phone" class="w-full text-xs px-2 py-1.5 border rounded">
+                            </div>
+                            <button @click="injectSponsorshipLedger()" class="w-full bg-purple-700 hover:bg-purple-900 text-white font-bold text-xs py-2 rounded transition shadow">Commit Corporate Injection Entry</button>
+                        </div>
+
+                        <div class="lg:col-span-2 bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+                            <div class="emerald-gradient px-4 py-3 text-white text-xs font-mono font-bold tracking-wider uppercase">
+                                Consolidated Balance Sheet Ledger
+                            </div>
+                            <div class="p-4">
+                                <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono mb-4">
+                                    <div class="bg-green-50 p-2 rounded border border-green-200"><span class="text-gray-500 block">Ticket Revenue:</span> <strong class="text-green-800" x-text="calculateTotalRevenue() + ' OMR'"></strong></div>
+                                    <div class="bg-purple-50 p-2 rounded border border-purple-200"><span class="text-gray-500 block">Sponsor Pool:</span> <strong class="text-purple-800" x-text="calculateSponsorTotal() + ' OMR'"></strong></div>
+                                    <div class="bg-blue-50 p-2 rounded border border-blue-200"><span class="text-gray-500 block">Net Liquidity:</span> <strong class="text-blue-800" x-text="(calculateTotalRevenue() + calculateSponsorTotal()) + ' OMR'"></strong></div>
+                                </div>
+                                <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono mb-2">Corporate Sponsor Audit Logs</h4>
+                                <div class="space-y-1.5 max-h-[180px] overflow-y-auto">
+                                    <template x-for="sp in mockDatabase.sponsors" :key="sp.id">
+                                        <div class="flex justify-between items-center text-xs font-mono bg-gray-50 p-2 rounded border border-gray-100">
+                                            <div>
+                                                <strong class="text-gray-800" x-text="sp.name"></strong>
+                                                <span class="text-[10px] text-gray-400 block" x-text="'Ref Node: ' + sp.phone"></span>
+                                            </div>
+                                            <span class="font-bold text-purple-700 font-mono" x-text="'+' + sp.amount + ' OMR'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="currentAdminTab === 'checkpoint'" class="space-y-6">
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs text-amber-900 leading-relaxed">
+                        <strong>Simulated Gate hardware terminal interface:</strong> In production deployment, this module requests secure browser camera layers to handle structural base64 token decryptions.
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-5 rounded-xl shadow border border-gray-100 space-y-4">
+                            <div class="flex items-center space-x-2 border-b pb-2">
+                                <span class="h-3 w-3 rounded-full bg-blue-600 block"></span>
+                                <h3 class="font-serif font-bold text-sm text-gray-800 uppercase tracking-wider">Operational Gate: Main Arena Ticket Attendance Checkpoint</h3>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase">Input Resident Token Identity Reference Code</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" placeholder="e.g., GMK-000001" x-model="checkpointScanId" class="w-full px-3 py-1.5 border rounded text-xs font-mono uppercase">
+                                    <button @click="simulateCheckpointValidation('attendance')" class="bg-blue-600 text-white font-bold text-xs px-4 rounded hover:bg-blue-800 transition">Execute Scan</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl shadow border border-gray-100 space-y-4">
+                            <div class="flex items-center space-x-2 border-b pb-2">
+                                <span class="h-3 w-3 rounded-full bg-amber-600 block"></span>
+                                <h3 class="font-serif font-bold text-sm text-gray-800 uppercase tracking-wider">Operational Gate: Dining Hall Food Voucher Validation</h3>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 uppercase">Input Resident Token Identity Reference Code</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" placeholder="e.g., GMK-000001" x-model="checkpointFoodId" class="w-full px-3 py-1.5 border rounded text-xs font-mono uppercase">
+                                    <button @click="simulateCheckpointValidation('food')" class="bg-amber-600 text-white font-bold text-xs px-4 rounded hover:bg-amber-800 transition">Execute Scan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+                        <div class="bg-gray-900 text-white font-mono text-xs px-4 py-2.5 flex justify-between items-center">
+                            <span>REALTIME TRACKING GATE BUS LOG ROUTER</span>
+                            <button @click="mockDatabase.logs = []" class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-300 hover:text-white">Flush Output Streams</button>
+                        </div>
+                        <div class="bg-gray-950 p-4 font-mono text-xs text-green-400 space-y-1 max-h-[250px] overflow-y-auto">
+                            <template x-if="mockDatabase.logs.length === 0">
+                                <p class="text-gray-600 italic">Awaiting secure network packets from validation gateways...</p>
+                            </template>
+                            <template x-for="log in mockDatabase.logs" :key="log.timestamp">
+                                <p class="leading-relaxed">
+                                    <span class="text-gray-500" x-text="'['+log.timestamp+']'"></span>
+                                    <span class="text-blue-400" x-text="'[GATEWAY_IP: 192.168.4.10'+log.gate+']'"></span>
+                                    <span x-text="log.message"></span>
+                                </p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+    </main>
+
+    <div x-show="showIdCardModal" class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4" x-transition>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border-2 border-kerala-gold" @click.outside="showIdCardModal = false">
+            <div class="emerald-gradient p-4 text-center text-white relative">
+                <h3 class="font-serif font-bold text-base tracking-wide text-kerala-lightgold">GREENS MALAYALEE KOOTAYAMA</h3>
+                <span class="text-[9px] uppercase tracking-widest text-emerald-100 block">Digital Residence Authentication Certificate</span>
+            </div>
+            
+            <div class="p-6 space-y-4 text-center bg-kerala-cream/50">
+                <div class="mx-auto w-36 h-36 bg-white p-2 border-2 border-kerala-deep rounded-xl shadow-inner flex flex-col items-center justify-center relative">
+                    <div class="grid grid-cols-4 gap-1 w-full h-full opacity-80">
+                        <div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-100"></div><div class="bg-gray-900 rounded-sm"></div>
+                        <div class="bg-gray-100"></div><div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-100"></div>
+                        <div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-100"></div><div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-900 rounded-sm"></div>
+                        <div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-900 rounded-sm"></div><div class="bg-gray-100"></div><div class="bg-gray-900 rounded-sm"></div>
+                    </div>
+                    <div class="absolute bg-white px-2 py-0.5 rounded text-[9px] font-mono font-bold text-kerala-deep border shadow border-kerala-gold/50" x-text="currentUser ? currentUser.gmk_id : ''"></div>
+                </div>
+
+                <div class="space-y-1">
+                    <h4 class="font-serif font-bold text-lg text-kerala-deep" x-text="currentUser ? currentUser.husband.name : ''"></h4>
+                    <p class="text-xs font-mono font-bold text-gray-600" x-text="'Flat Unit Cluster: ' + (currentUser ? currentUser.flat_number : '')"></p>
+                    <p class="text-[11px] font-mono text-gray-500" x-text="'Primary Network Contact: ' + (currentUser ? currentUser.phone : '')"></p>
+                </div>
+
+                <div class="bg-white p-2.5 rounded-lg border border-gray-200 text-left text-[10px] space-y-1 font-mono text-gray-600">
+                    <p>🟢 Node Hash Verification Status: Secure</p>
+                    <p x-text="'🟢 Registered Account Base: ' + (currentUser ? currentUser.username : '')"></p>
+                </div>
+
+                <button @click="showIdCardModal = false" class="w-full bg-kerala-deep text-white font-bold text-xs py-2 rounded transition hover:bg-black">Close Identity Window</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gmkPlatform() {
+            return {
+                // UI Management Vectors
+                currentView: 'login',
+                authMode: 'resident',
+                regStep: 1,
+                currentAdminTab: 'overview',
+                showPassword: false,
+                otpSent: false,
+                generatedOTP: '',
+                showIdCardModal: false,
+
+                // Input Forms
+                loginForm: { username: '', password: '' },
+                checkpointScanId: '',
+                checkpointFoodId: '',
+                financeForm: { sponsorName: '', amount: 0, phone: '' },
+                
+                regForm: {
+                    flat_number: '', username: '', email: '', password: '', phone: '', otpInput: '',
+                    husband: { title: 'Mr', name: '', profession: '', company: '' },
+                    wife: { title: 'Mrs', name: '', professionType: 'Employed', company: '' },
+                    children: []
+                },
+
+                eventBooking: {
+                    attendees: { husband: true, wife: true, children: [] },
+                    guestAdults: 0,
+                    guestChildren: 0,
+                    computedCost: 0,
+                    tierName: 'Standard Family Sequence'
+                },
+
+                // Active Core Event Specs
+                activeEvent: {
+                    name: 'Grand Royal Onam Celebration Sequence 2026',
+                    desc: 'The defining corporate annual cultural gathering sequence of the Greens Malayalee Kootayama community ecosystem.',
+                    venue: 'Grand Central Residential Arena Lawn - Space Alpha',
+                    date: '2026-08-28',
+                    time: '09:00 AM AST'
+                },
+
+                // Current Session Token State
+                currentUser: null,
+
+                // Simulated Non-Volatile Memory Model Storage Engine
+                mockDatabase: {
+                    residents: [
+                        {
+                            gmk_id: 'GMK-000001',
+                            flat_number: 'B3-04-72',
+                            username: 'B30472',
+                            email: 'alpha@gmk-node.com',
+                            password: 'password123',
+                            phone: '+96891112222',
+                            husband: { title: 'Mr', name: 'Madhavan Nair', profession: 'Principal Systems Architect', company: 'Muscat Petroleum Development' },
+                            wife: { title: 'Mrs', name: 'Lakshmi Nair', professionType: 'Employed', company: 'Oman National Tech University' },
+                            children: [{ name: 'Arjun Nair', yob: 2016, age: 10 }]
+                        },
+                        {
+                            gmk_id: 'GMK-000002',
+                            flat_number: 'A1-02-15',
+                            username: 'A10215',
+                            email: 'beta@gmk-node.com',
+                            password: 'password123',
+                            phone: '+96894445555',
+                            husband: { title: 'Dr', name: 'Siddharth Menon', profession: 'Senior Consultant Cardiologist', company: 'Royal Muscat Health Complex' },
+                            wife: { title: 'Mrs', name: 'Anjali Menon', professionType: 'Homemaker', company: '' },
+                            children: [{ name: 'Diya Menon', yob: 2021, age: 5 }]
+                        }
+                    ],
+                    bookings: [
+                        { gmk_id: 'GMK-000001', cost: 14, checkedIn: false, foodCollected: false }
+                    ],
+                    sponsors: [
+                        { id: 1, name: 'Lulu Hypermarkets Group Muscat', amount: 500, phone: '+96899990000' },
+                        { id: 2, name: 'Malabar Gold & Diamonds', amount: 750, phone: '+96898881111' }
+                    ],
+                    logs: []
+                },
+
+                // Execution Lifecycle Logic Functions
+                calculateUsername() {
+                    let text = this.regForm.flat_number.replace(/[\s-]/g, '').toUpperCase();
+                    this.regForm.username = text;
+                },
+
+                triggerOTPStub() {
+                    if(!this.regForm.phone) { alert('Please target a valid operational phone infrastructure destination block.'); return; }
+                    this.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+                    this.otpSent = true;
+                    this.logNetworkEvent('SMS_GATEWAY', `Dispatched OTP token validation segment sequence [${this.generatedOTP}] to target node ${this.regForm.phone}`);
+                },
+
+                addChildNode() {
+                    this.regForm.children.push({ name: '', yob: '', age: 0 });
+                },
+
+                calculateAges() {
+                    this.regForm.children.forEach(c => {
+                        if(c.yob && c.yob <= 2026) { c.age = 2026 - parseInt(c.yob); }
+                    });
+                },
+
+                advanceRegStep(target) {
+                    if(target === 2 && this.otpSent && this.regForm.otpInput !== this.generatedOTP) {
+                        alert('Cryptographic OTP Token Handshake mismatch error.'); return;
+                    }
+                    this.regStep = target;
+                },
+
+                finalizeRegistration() {
+                    let sequentialNum = String(this.mockDatabase.residents.length + 1).padStart(6, '0');
+                    let generatedGmkId = `GMK-${sequentialNum}`;
+                    
+                    let completeRecord = {
+                        gmk_id: generatedGmkId,
+                        flat_number: this.regForm.flat_number,
+                        username: this.regForm.username,
+                        email: this.regForm.email,
+                        password: this.regForm.password,
+                        phone: this.regForm.phone,
+                        husband: JSON.parse(JSON.stringify(this.regForm.husband)),
+                        wife: JSON.parse(JSON.stringify(this.regForm.wife)),
+                        children: JSON.parse(JSON.stringify(this.regForm.children))
+                    };
+
+                    this.mockDatabase.residents.push(completeRecord);
+                    this.logNetworkEvent('DB_CORE', `Successfully structured new permanent record for ${generatedGmkId}`);
+                    alert(`Registration successful! Generated permanent identity token: ${generatedGmkId}`);
+                    this.currentView = 'login';
+                },
+
+                executeLogin() {
+                    if(this.authMode === 'admin') {
+                        if(this.loginForm.username === 'ADMIN' && this.loginForm.password === 'admin') {
+                            this.currentUser = { gmk_id: 'SYSTEM_EXEC_ROOT', husband: { name: 'Executive Director Command Node' } };
+                            this.currentView = 'admin_dashboard';
+                            this.logNetworkEvent('AUTH_ENG', 'Admin security clearance token granted.');
+                            return;
+                        }
+                        alert('Invalid Administrative credentials.'); return;
+                    }
+
+                    let match = this.mockDatabase.residents.find(r => r.username === this.loginForm.username.toUpperCase() && r.password === this.loginForm.password);
+                    if(match) {
+                        this.currentUser = match;
+                        this.syncUserBookingState();
+                        this.currentView = 'resident_dashboard';
+                        this.logNetworkEvent('AUTH_ENG', `Session active for resident tracking index: ${match.gmk_id}`);
+                    } else {
+                        alert('Authentication failure. Reference matrix elements could not resolve.');
+                    }
+                },
+
+                triggerGoogleLogin() {
+                    this.currentUser = this.mockDatabase.residents[0];
+                    this.syncUserBookingState();
+                    this.currentView = 'resident_dashboard';
+                    this.logNetworkEvent('OAUTH_ENG', `Passed external OAuth parameters safely for node: ${this.currentUser.gmk_id}`);
+                },
+
+                syncUserBookingState() {
+                    let exist = this.mockDatabase.bookings.find(b => b.gmk_id === this.currentUser.gmk_id);
+                    if(!exist) {
+                        this.eventBooking.attendees.children = this.currentUser.children.map(() => true);
+                        this.recalculateInvoice();
+                    }
+                },
+
+                recalculateInvoice() {
+                    let rate = 0;
+                    let count = 0;
+                    if(this.eventBooking.attendees.husband) count++;
+                    if(this.eventBooking.attendees.wife) count++;
+                    
+                    let childCount = this.eventBooking.attendees.children.filter(c => c).length;
+                    
+                    if(count === 2) {
+                        rate = 10; // Base Couple Charge
+                        this.eventBooking.tierName = 'Standard Married Couple Unit Matrix';
+                    } else if (count === 1) {
+                        rate = 6;  // Single Resident Charge
+                        this.eventBooking.tierName = 'Single Professional Standard Profile';
+                    } else {
+                        rate = 0;
+                        this.eventBooking.tierName = 'Null Participation Selection Vector';
+                    }
+
+                    rate += (childCount * 2); // Dynamic child calculations
+                    rate += (this.eventBooking.guestAdults * 7);
+                    rate += (this.eventBooking.guestChildren * 4);
+
+                    this.eventBooking.computedCost = rate;
+                },
+
+                commitEventParticipation() {
+                    let existIdx = this.mockDatabase.bookings.findIndex(b => b.gmk_id === this.currentUser.gmk_id);
+                    let block = {
+                        gmk_id: this.currentUser.gmk_id,
+                        cost: this.eventBooking.computedCost,
+                        checkedIn: false,
+                        foodCollected: false
+                    };
+                    if(existIdx > -1) { this.mockDatabase.bookings[existIdx] = block; } 
+                    else { this.mockDatabase.bookings.push(block); }
+                    
+                    this.logNetworkEvent('LEDGER_ENG', `Committed financial ticket liability asset row for ${this.currentUser.gmk_id}. Total: ${this.eventBooking.computedCost} OMR`);
+                    alert(`Secure Ticket Node registered safely. Calculated billing total of ${this.eventBooking.computedCost} OMR pushed to Central Finance clearance queues.`);
+                },
+
+                calculateTotalRevenue() {
+                    return this.mockDatabase.bookings.reduce((sum, b) => sum + b.cost, 0);
+                },
+
+                calculateSponsorTotal() {
+                    return this.mockDatabase.sponsors.reduce((sum, s) => sum + s.amount, 0);
+                },
+
+                injectSponsorshipLedger() {
+                    if(!this.financeForm.sponsorName || this.financeForm.amount <= 0) return;
+                    this.mockDatabase.sponsors.push({
+                        id: Date.now(),
+                        name: this.financeForm.sponsorName,
+                        amount: this.financeForm.amount,
+                        phone: this.financeForm.phone
+                    });
+                    this.logNetworkEvent('FIN_COMMIT', `Injected external corporate asset stream: ${this.financeForm.sponsorName} [${this.financeForm.amount} OMR]`);
+                    this.financeForm = { sponsorName: '', amount: 0, phone: '' };
+                },
+
+                simulateCheckpointValidation(type) {
+                    let targetId = type === 'attendance' ? this.checkpointScanId.toUpperCase() : this.checkpointFoodId.toUpperCase();
+                    let booking = this.mockDatabase.bookings.find(b => b.gmk_id === targetId);
+                    
+                    if(!booking) {
+                        this.logNetworkEvent('ERR_SEC', `ACCESS REJECTED: Identity node token [${targetId}] holds no event parameters.`);
+                        alert('Access Denied: Ticket Registration Not Found in Local Cache.');
+                        return;
+                    }
+
+                    if(type === 'attendance') {
+                        if(booking.checkedIn) {
+                            this.logNetworkEvent('WARN_CLR', `DUPLICATE BREACH ATTEMPT: Node token [${targetId}] checked in previously.`);
+                            alert('Security Warning: Ticket Signature Matrix Flagged as Already Processed.');
+                        } else {
+                            booking.checkedIn = true;
+                            this.logNetworkEvent('GATE_OK', `ACCESS GRANTED: Validation complete for token ${targetId}. Entrance pipeline cleared.`);
+                            alert('Success: Access Granted. Welcome to the venue.');
+                        }
+                    } else {
+                        if(booking.foodCollected) {
+                            this.logNetworkEvent('WARN_CLR', `DUPLICATE VOUCHER CLAIM: Token [${targetId}] attempted to recycle meal credentials.`);
+                            alert('Voucher Error: Food services allocation quota spent for this token.');
+                        } else {
+                            booking.foodCollected = true;
+                            this.logNetworkEvent('FOOD_OK', `VOUCHER DISPATCHED: Handover logged safely for token ${targetId}.`);
+                            alert('Success: Food Voucher Validated.');
+                        }
+                    }
+                    this.checkpointScanId = '';
+                    this.checkpointFoodId = '';
+                },
+
+                evictResidentProfile(gmkId) {
+                    this.mockDatabase.residents = this.mockDatabase.residents.filter(r => r.gmk_id !== gmkId);
+                    this.logNetworkEvent('SYS_PURGE', `Permanently purged execution mappings for node: ${gmkId}. Data frozen and cold-stored under archiving constraints.`);
+                },
+
+                logNetworkEvent(subsystem, msg) {
+                    let ts = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                    this.mockDatabase.logs.unshift({ timestamp: ts, gate: Math.floor(Math.random() * 3) + 1, message: `[${subsystem}] ${msg}` });
+                },
+
+                logout() {
+                    this.currentUser = null;
+                    this.currentView = 'login';
+                    this.loginForm = { username: '', password: '' };
+                }
+            }
+        }
+    </script>
+</body>
+</html>
