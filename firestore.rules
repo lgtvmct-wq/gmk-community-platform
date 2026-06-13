@@ -1,0 +1,168 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net catch-all (Pillar 1/8)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Primitives & Functions ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Role Helper: Retrieves the list of roles assigned to the current user
+    function getUserRoles() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles;
+    }
+
+    // Check if the current authenticated user has a specific role assigned in Firestore
+    function hasRole(role) {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserRoles().hasAny([role]);
+    }
+
+    // 1. Admin Concept Helper
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    // 2. Super Admin Concept Helper (Bootstrapped with User's runtime email address to resolve initial setup dependencies)
+    function isSuperAdmin() {
+      return hasRole('superAdmin') || (isSignedIn() && request.auth.token.email == 'lgtvmct@gmail.com');
+    }
+
+    // 3. Executive Concept Helper
+    function isExecutive() {
+      return hasRole('president') || hasRole('vicePresident');
+    }
+
+    // Executive read-only oversight across the platform (does NOT grant write/modify permissions)
+    function hasReadOversight() {
+      return isAdmin() || isSuperAdmin() || isExecutive();
+    }
+
+    // Administrative write / configuration permissions
+    function isAdminOrSuperAdmin() {
+      return isAdmin() || isSuperAdmin();
+    }
+
+    // Helper to get raw incoming values for static validation
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper to get existing document values
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity-Specific Validation Blueprints ---
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.roles is list && data.roles.size() > 0 && data.roles.size() <= 5 &&
+             data.isActive is bool;
+    }
+
+    function isValidResident(data) {
+      return data.fullName is string && data.fullName.size() <= 128 &&
+             data.gender is string && (data.gender == 'Male' || data.gender == 'Female') &&
+             data.residentType is string && (data.residentType == 'primaryAdult' || data.residentType == 'additionalAdult' || data.residentType == 'parent' || data.residentType == 'child') &&
+             data.relationship is string && data.relationship.size() <= 128 &&
+             (!('buildingNumber' in data) || (data.buildingNumber is string && data.buildingNumber.size() <= 32)) &&
+             (!('unitNumber' in data) || (data.unitNumber is string && data.unitNumber.size() <= 32));
+    }
+
+    function isValidFamily(data) {
+      return data.gmkId is string && data.gmkId.size() <= 16 &&
+             data.buildingNumber is string && data.buildingNumber.size() <= 32 &&
+             data.unitNumber is string && data.unitNumber.size() <= 32 &&
+             data.flatNumber is string && data.flatNumber.size() <= 32 &&
+             data.primaryName is string && data.primaryName.size() <= 128 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.phone is string && data.phone.size() <= 32 &&
+             data.status is string && (data.status == 'active' || data.status == 'pendingApproval' || data.status == 'former' || data.status == 'correctionRequested') &&
+             (!('approvedBy' in data) || (data.approvedBy is string && data.approvedBy.size() <= 256)) &&
+             (!('approvedAt' in data) || (data.approvedAt is string && data.approvedAt.size() <= 128)) &&
+             (!('whatsapp' in data) || (data.whatsapp is string && data.whatsapp.size() <= 32)) &&
+             (!('membersCount' in data) || (data.membersCount is int));
+    }
+
+    // --- Collection Rulesets ---
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (userId == request.auth.uid || hasReadOversight());
+      allow list: if isSignedIn() && hasReadOversight();
+      allow create: if isSignedIn() && userId == request.auth.uid && isValidUser(incoming()) && (
+        // Self-signup: only allow standard 'resident' role, or allow if they are the bootstrapped Super Admin
+        incoming().roles == ['resident'] || isSuperAdmin()
+      );
+      allow update: if isSignedIn() && (
+        // Self update: prevent changing sensitive system fields (roles, status, links, email)
+        (userId == request.auth.uid && isValidUser(incoming()) && !incoming().diff(existing()).affectedKeys().hasAny(['roles', 'isActive', 'residentRef', 'email'])) ||
+        // Master administrative edit path
+        (isAdminOrSuperAdmin() && isValidUser(incoming()))
+      );
+      allow delete: if isSignedIn() && isAdminOrSuperAdmin();
+    }
+
+    // 2. Residents Collection
+    match /residents/{residentId} {
+      allow get: if isSignedIn() && (residentId == 'res-' + request.auth.uid || hasReadOversight());
+      allow list: if isSignedIn() && (hasReadOversight() || (resource.data.directoryVisibility != null && resource.data.directoryVisibility.isVisible == true));
+      // Onboarding: user owns resident document named res-[uid]
+      allow create: if isSignedIn() && (residentId == 'res-' + request.auth.uid || isAdminOrSuperAdmin()) && isValidResident(incoming());
+      allow update: if isSignedIn() && (
+        // Self update: prevent user from tampering with their linked family relationship
+        (residentId == 'res-' + request.auth.uid && isValidResident(incoming()) && !incoming().diff(existing()).affectedKeys().hasAny(['familyRef'])) ||
+        // Admin update
+        (isAdminOrSuperAdmin() && isValidResident(incoming()))
+      );
+      allow delete: if isSignedIn() && isAdminOrSuperAdmin();
+    }
+
+    // 3. Families Collection
+    match /families/{familyId} {
+      allow get: if isSignedIn() && (familyId == 'fam-' + request.auth.uid || hasReadOversight());
+      allow list: if isSignedIn() && hasReadOversight();
+      // Onboarding: limits every user to exactly one family creation (ID: fam-[uid])
+      allow create: if isSignedIn() && (familyId == 'fam-' + request.auth.uid || isAdminOrSuperAdmin()) && isValidFamily(incoming());
+      allow update: if isSignedIn() && (
+        // Self update: prevent users from tampering with flat allocations, statuses, or GMK sequential identifiers
+        (familyId == 'fam-' + request.auth.uid && isValidFamily(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['primaryName', 'phone', 'whatsapp', 'membersCount', 'members', 'email'])) ||
+        // Admin update path
+        (isAdminOrSuperAdmin() && isValidFamily(incoming()))
+      );
+      allow delete: if isSignedIn() && isAdminOrSuperAdmin();
+    }
+
+    // 4. Notifications Collection
+    match /notifications/{notificationId} {
+      allow get, list: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.recipientId == request.auth.uid || 
+        hasReadOversight()
+      );
+      allow create, update, delete: if isSignedIn() && isAdminOrSuperAdmin();
+    }
+
+    // 5. Audit Logs Collection
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn() && hasReadOversight();
+      allow write: if false; // Cloud Functions / Admin SDK only (bypasses rules)
+    }
+
+    // 6. System Settings Collection
+    match /systemSettings/global {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isAdminOrSuperAdmin();
+    }
+
+  }
+}

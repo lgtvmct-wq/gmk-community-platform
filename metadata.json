@@ -1,0 +1,6 @@
+{
+  "name": "GMK Community Platform",
+  "description": "A secure official community platform for the Greens Malayalee Community (GMK) located at Al Hail Greens, Muscat, Oman, supporting member directory accounts, cultural events operations, and community collaborations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

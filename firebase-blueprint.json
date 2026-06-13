@@ -1,0 +1,119 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Authentication and role mapping details for logged in users",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "roles": { "type": "array" },
+        "residentRef": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "roles", "isActive", "createdAt"]
+    },
+    "Resident": {
+      "title": "Resident Profile",
+      "description": "Primary resident details and directory configurations",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "gender": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsApp": { "type": "string" },
+        "profession": { "type": "string" },
+        "companyName": { "type": "string" },
+        "familyRef": { "type": "string" },
+        "buildingNumber": { "type": "string" },
+        "unitNumber": { "type": "string" },
+        "flatNumber": { "type": "string" },
+        "residentType": { "type": "string", "enum": ["primaryAdult", "additionalAdult", "parent", "child"] },
+        "relationship": { "type": "string" },
+        "directoryVisibility": { "type": "object" }
+      },
+      "required": ["fullName", "gender", "familyRef", "residentType", "relationship"]
+    },
+    "Family": {
+      "title": "Family Profile",
+      "description": "Family household records, registration status and listed dependents",
+      "type": "object",
+      "properties": {
+        "gmkId": { "type": "string" },
+        "buildingNumber": { "type": "string" },
+        "unitNumber": { "type": "string" },
+        "flatNumber": { "type": "string" },
+        "primaryName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "status": { "type": "string", "enum": ["pendingApproval", "active", "former", "correctionRequested"] },
+        "membersCount": { "type": "integer" },
+        "createdAt": { "type": "string" },
+        "approvedBy": { "type": "string" },
+        "approvedAt": { "type": "string" }
+      },
+      "required": ["gmkId", "buildingNumber", "unitNumber", "flatNumber", "primaryName", "email", "phone", "status", "createdAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Alert signals and broadcast messages directed to residents",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "recipientId": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "body"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Administrative actions log trail for platform security audits",
+      "type": "object",
+      "properties": {
+        "actionType": { "type": "string" },
+        "performedBy": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["actionType", "performedBy", "timestamp"]
+    },
+    "SystemSettings": {
+      "title": "System Settings",
+      "description": "Global settings and database counters",
+      "type": "object",
+      "properties": {
+        "gmkIdCounter": { "type": "integer" }
+      }
+    }
+  },
+  "firestore": {
+    "/systemSettings/global": {
+      "schema": "SystemSettings",
+      "description": "Global operational variables and autoincrement counters"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Matches authenticated users"
+    },
+    "/residents/{residentId}": {
+      "schema": "Resident",
+      "description": "Resident contact detail sheets"
+    },
+    "/families/{familyId}": {
+      "schema": "Family",
+      "description": "Allocated family flats and household roster directories"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "Direct resident alert inbox bulletins"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Immutable append-only activity histories"
+    }
+  }
+}
