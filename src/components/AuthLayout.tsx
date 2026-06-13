@@ -21,9 +21,9 @@ export default function AuthLayout() {
   } = useAuth();
   
   // Input fields state
-  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginIdentifier, setLoginIdentifier] = useState('way2anand@yahoo.com');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   
   // Forgot password flow state
@@ -659,34 +659,37 @@ export default function AuthLayout() {
   };
 
   return (
-    <div className="w-full h-screen min-h-screen bg-[#FAF8F2] flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden font-sans relative animate-fade-in text-slate-900">
+    <div className="w-full h-screen min-h-screen bg-[#FDFDFB] flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden font-sans relative animate-fade-in text-slate-900">
       
-      {/* Soft Decorative Background Accent */}
-      <div className="absolute inset-0 bg-cover bg-center opacity-[0.04]" style={{ backgroundImage: `url(${loginBg})` }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F2]/90 via-[#FAF8F2] to-[#FAF8F5]" />
+      {/* High-Resolution Gatehouse Backdrop (Al Hail Greens Portal) with High Fidelity Offset and soft focus */}
+      <div 
+        className="absolute inset-0 bg-cover bg-[center_left_20%] md:bg-center opacity-[0.9] md:opacity-[0.95] blur-[0.2px] scale-[1.01] transition-all duration-1000" 
+        style={{ backgroundImage: `url(${loginBg})` }} 
+      />
+      
+      {/* Elegant atmospheric overlays for ultimate input and text readability */}
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/80 via-white/50 to-transparent z-10" />
+      <div className="absolute inset-0 bg-[#FDFDFB]/15 mix-blend-overlay z-0" />
       
       {/* Elegant Royal Gold Top/Bottom lines resembling the Kasavu Mundu/Saree Border */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#C59B27] to-transparent z-20" />
       <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#C59B27] to-transparent z-20" />
 
-      {/* Main Card Wrapper shifting it slightly upwards to fix the viewport perfectly */}
-      <div className="w-full max-w-[340px] flex flex-col space-y-4 relative z-10 -mt-6 sm:-mt-10">
+      {/* Main Card Wrapper shifted slightly upward to center-align beautifully within the gatehouse arch */}
+      <div className="w-full max-w-[350px] flex flex-col space-y-4 relative z-20 -mt-10 sm:-mt-14 drop-shadow-[0_10px_25px_rgba(13,78,53,0.15)]">
         
-        {/* Header styling - Removed Logo and all Muscat/Oman references */}
-        <div className="text-center space-y-1.5">
-          <h1 className="font-display text-xl sm:text-2xl font-black text-[#0A422D] tracking-tight leading-none">
+        {/* Header styling - Centered, premium typography using Outfit display font */}
+        <div className="text-center space-y-1 select-none">
+          <h1 className="font-display text-2xl sm:text-3xl font-black text-[#0A422D] tracking-tight leading-none drop-shadow-[0_2px_4px_rgba(255,255,255,0.7)]">
             Greens Malayalee Community
           </h1>
-          <p className="text-[9px] sm:text-[10px] font-bold text-[#C59B27] tracking-widest uppercase mb-1">
+          <p className="text-[10px] sm:text-[11px] font-black text-[#C59B27] tracking-[0.25em] uppercase drop-shadow-[0_1.5px_3px_rgba(255,255,255,0.8)]">
             GMK Community Platform
-          </p>
-          <p className="text-[11px] sm:text-xs text-[#0A422D]/75 font-medium leading-relaxed max-w-xs mx-auto">
-            Connecting families • Celebrating traditional cultural values
           </p>
         </div>
 
         {/* Login Card styled with gold pinstripe and cream palette */}
-        <div className="bg-white/95 rounded-2xl border border-[#C59B27]/20 shadow-xl p-5 sm:p-6 relative">
+        <div className="bg-white/95 rounded-2xl border border-[#C59B27]/25 shadow-2xl p-5 sm:p-6 relative transition duration-300 hover:shadow-[#0D4E35]/10">
           
           {/* Top golden horizontal bar inside the card */}
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#C59B27] to-[#D4A325] rounded-t-2xl" />
@@ -809,22 +812,22 @@ export default function AuthLayout() {
           
         </div>
 
-        {/* Under-card Signup callouts */}
-        <div className="text-center pt-1 flex justify-center items-center gap-2">
-          <span className="text-xs text-slate-500 font-semibold">New resident family?</span>
+        {/* Under-card Signup callout */}
+        <div className="text-center pt-1.5 flex justify-center items-center gap-2 select-none">
+          <span className="text-xs text-slate-600 font-semibold drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]">New Resident Family?</span>
           <button
             onClick={() => setShowRegModal(true)}
-            className="text-xs font-black text-[#0D4E35] hover:text-[#C59B27] hover:underline cursor-pointer transition uppercase tracking-wider"
+            className="text-xs font-black text-[#0D4E35] hover:text-[#C59B27] hover:underline cursor-pointer transition uppercase tracking-wider drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]"
           >
-            Request Access
+            Sign Up
           </button>
         </div>
 
       </div>
 
-      {/* Bottom subtle copyright / identity line - absolute positioned or flex end, kept compact */}
-      <div className="absolute bottom-4 left-0 right-0 text-center z-10 text-[9px] font-black uppercase text-[#0A422D]/40 tracking-widest leading-none">
-        Al Hail Greens • Greens Malayalee Community (GMK)
+      {/* Bottom subtle identity caption - perfectly styled uppercase, centered, and placed as a relative-independent overlay */}
+      <div className="absolute bottom-4 left-0 right-0 text-center z-20 text-[10px] font-bold uppercase text-[#0A422D]/55 tracking-[0.25em] leading-none drop-shadow-[0_1.5px_3px_rgba(255,255,255,0.9)]">
+        GREENS MALAYALEE COMMUNITY (GMK)
       </div>
 
         {/* ====================================================
